@@ -52,9 +52,7 @@ async def search_hotels(
         if not raw_properties:
             return f"No hotels found in {city} for the given dates. Try different dates or a nearby city."
 
-        nights = (params.check_out - params.check_in).days
-        if nights <= 0:
-            nights = 1
+        nights = max(1, (params.check_out - params.check_in).days)
 
         offers = []
         for idx, raw in enumerate(raw_properties):
@@ -75,9 +73,7 @@ async def search_hotels(
                     per_night_val = total_val / nights
 
                 amenities = raw.get("amenities", [])
-                if not amenities:
-                    amenities = []
-
+                
                 offer = HotelOffer(
                     hotel_id=f"HTL-{idx+1:03d}",
                     hotel_name=raw.get("name", "Unknown Hotel"),
@@ -87,7 +83,7 @@ async def search_hotels(
                     currency=params.currency,
                     amenities=amenities[:5] if isinstance(amenities, list) else [],
                     link=raw.get("link"),
-                    property_token=raw.get("serpapi_property_details_link", "").split("property_token=")[-1].split("&")[0] if raw.get("serpapi_property_details_link") else None,
+                    property_token=None,
                 )
 
                 if params.max_price_per_night and offer.price_per_night > params.max_price_per_night:
@@ -175,15 +171,11 @@ async def get_hotel_details(
         nearby = raw.get("nearby_places", [])
         nearby_str = ""
         if nearby:
-            nearby_items = []
+            items = []
             for p in nearby[:5]:
-                t_name = p.get("name", "Unknown")
-                t_dist = p.get("transportations", [{}])
-                dist_text = ""
-                if t_dist and isinstance(t_dist, list) and len(t_dist) > 0:
-                    dist_text = f" ({t_dist[0].get('duration', '')})"
-                nearby_items.append(f"    • {t_name}{dist_text}")
-            nearby_str = "\n  📍 **Nearby Places:**\n" + "\n".join(nearby_items)
+                duration = f" ({p['transportations'][0].get('duration', '')})" if p.get("transportations") else ""
+                items.append(f"    • {p.get('name', 'Unknown')}{duration}")
+            nearby_str = "\n  📍 **Nearby Places:**\n" + "\n".join(items)
 
         amenities_str = ", ".join(amenities[:8]) if amenities else "Not listed"
 

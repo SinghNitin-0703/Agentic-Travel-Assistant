@@ -37,11 +37,6 @@ async def search_flights(
     print(f"  TOOL CALLED: search_flights({origin} → {destination}, {departure_date})")
 
     try:
-        # Validate inputs via Pydantic
-        from datetime import datetime
-        
-        # We need dates as datetime.date for Pydantic but we get strings
-        # Pydantic will parse them if valid
         trip_type = 1 if return_date else 2
         params = FlightSearchParams(
             origin=origin.upper(),
@@ -91,12 +86,8 @@ async def search_flights(
                 last_leg = flights[-1]
                 price = float(flight_group.get("price", 0))
 
-                airlines = []
-                for leg in flights:
-                    airline_name = leg.get("airline", "Unknown")
-                    if airline_name not in airlines:
-                        airlines.append(airline_name)
-
+                airlines = list(dict.fromkeys(leg.get("airline", "Unknown") for leg in flights))
+                
                 offer = FlightOffer(
                     flight_id=f"FL-{idx+1:03d}",
                     airline=", ".join(airlines),

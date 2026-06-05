@@ -48,18 +48,13 @@ async def build_itinerary(
         session["itinerary"] = itinerary_data
         await save_session(session_id, session)
 
-        output = " **Draft Itinerary — Bharat YatraBot** 🇮🇳\n\n"
+        sections = [" **Draft Itinerary — Bharat YatraBot** 🇮🇳"]
 
-        if flight_summary:
-            output += f"✈️ **Flight:**\n{flight_summary}\n\n"
+        if flight_summary: sections.append(f"✈️ **Flight:**\n{flight_summary}")
+        if hotel_summary: sections.append(f"🏨 **Hotel:**\n{hotel_summary}")
+        if places_summary: sections.append(f"🗺️ **Places to Visit:**\n{places_summary}")
 
-        if hotel_summary:
-            output += f"🏨 **Hotel:**\n{hotel_summary}\n\n"
-
-        if places_summary:
-            output += f"🗺️ **Places to Visit:**\n{places_summary}\n\n"
-
-        output += (
+        sections.append(
             f"---\n"
             f"💰 **Estimated Grand Total: {total_price:,.0f} {currency}**\n"
             f"  ✈️ Flight: {total_flight_price:,.0f} {currency}\n"
@@ -68,7 +63,7 @@ async def build_itinerary(
             f"Would you like to confirm this itinerary or make any changes?"
         )
 
-        return output
+        return "\n\n".join(sections)
 
     except Exception as e:
         return f" Error building itinerary: {str(e)}"
