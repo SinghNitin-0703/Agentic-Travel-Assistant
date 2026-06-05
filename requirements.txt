@@ -1,0 +1,9 @@
+agno
+openai
+pydantic
+httpx
+python-dotenv
+sqlalchemy
+fastapi
+uvicorn
+aiosqlite
